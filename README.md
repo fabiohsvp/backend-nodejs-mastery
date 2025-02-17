@@ -1,6 +1,6 @@
-# Backend Node.js - API Completa
+# Node.js - API de Gestão de Usuários Completa
 
-Este repositório demonstra o desenvolvimento de uma API backend utilizando Node.js, aplicando arquitetura MVC, Middleware, autenticação de API, upload de arquivos e fotos, e fila de execução.
+Este repositório demonstra o desenvolvimento de uma API de Gestão de Usuários utilizando Node.js, aplicando arquitetura MVC, Middleware, autenticação de API, upload de arquivos e fotos, e fila de execução.
 
 ## Funcionalidades
 - Padrão API REST para padronização de arquitetura WEB
