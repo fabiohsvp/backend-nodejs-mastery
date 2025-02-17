@@ -1,4 +1,4 @@
-import Sequelize, { Model, Op } from "sequelize";
+import Sequelize, { Model } from "sequelize";
 
 class Customer extends Model {
     static init(sequelize) {
@@ -11,11 +11,15 @@ class Customer extends Model {
             {
                 scopes: {},
                 hooks: {
-                    beforeValidate: (customer, options) => {
+                    beforeValidate: (customer) => {
                         customer.status = "ARCHIVED";
                     },
                 },
                 sequelize,
+                name: {
+                    singular: "customer",
+                    plural: "customers",
+                },
             }
         );
     }

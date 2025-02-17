@@ -2,16 +2,14 @@ import * as Yup from "yup";
 import { Op } from "sequelize";
 import { parseISO } from "date-fns";
 
-import Customer from "../models/Customer";
-import Contact from "../models/Contact";
+import User from "../models/User";
 
-class CustomersController {
-    //Listagem dos Customers
+class UsersController {
+    //Listagem dos Users
     async index(req, res) {
         const {
             name,
             email,
-            status,
             createdBefore,
             createdAfter,
             updatedBefore,
@@ -39,17 +37,6 @@ class CustomersController {
                 ...where,
                 email: {
                     [Op.iLike]: email,
-                },
-            };
-        }
-
-        if (status) {
-            where = {
-                ...where,
-                status: {
-                    [Op.in]: status
-                        .split(",")
-                        .map((item) => item.toUpperCase()),
                 },
             };
         }
@@ -96,14 +83,9 @@ class CustomersController {
             order = sort.split(",").map((item) => item.split(":"));
         }
 
-        const data = await Customer.findAll({
+        const data = await User.findAll({
+            attributes: { exclude: ["password", "password_hash"] },
             where,
-            include: [
-                {
-                    model: Contact,
-                    attributes: ["id", "status"],
-                },
-            ],
             order,
             limit,
             offset: limit * page - limit,
@@ -112,69 +94,95 @@ class CustomersController {
         return res.json(data);
     }
 
-    // Recupera um Customer
+    // Exibição de um User
     async show(req, res) {
-        const customer = await Customer.findByPk(req.params.id);
-
-        if (!customer) {
-            return res.status(404).json({ error: "Customer not found" });
+        const user = await User.findByPk(req.params.id);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
         }
+
+        const { id, name, email, createdAt, updatedAt } = user;
+
+        return res.json({ id, name, email, createdAt, updatedAt });
     }
 
-    // Cria um novo Customer
+    // Criação de um User
     async create(req, res) {
         const schema = Yup.object().shape({
             name: Yup.string().required(),
             email: Yup.string().email().required(),
-            status: Yup.string().uppercase(),
+            password: Yup.string().required().min(8),
+            passwordConfirmation: Yup.string().when(
+                "password",
+                (password, field) =>
+                    password
+                        ? field.required().oneOf([Yup.ref("password")])
+                        : field
+            ),
         });
 
         if (!(await schema.isValid(req.body))) {
             return res.status(400).json({ error: "Validation fails" });
         }
 
-        await schema.validate(req.body);
-
-        const customer = await Customer.create(req.body);
-
-        return res.status(201).json(customer);
+        const { id, name, email, createdAt, updatedAt } = await User.create(
+            req.body
+        );
+        return res.status(201).json({ id, name, email, createdAt, updatedAt });
     }
 
-    // Atualiza um Customer
+    // Atualização de um User
     async update(req, res) {
         const schema = Yup.object().shape({
             name: Yup.string(),
             email: Yup.string().email(),
-            status: Yup.string().uppercase(),
+            oldPassword: Yup.string().min(8),
+            password: Yup.string()
+                .min(8)
+                .when("oldPassword", (oldPassword, field) =>
+                    oldPassword ? field.required() : field
+                ),
+            passwordConfirmation: Yup.string().when(
+                "password",
+                (password, field) =>
+                    password
+                        ? field.required().oneOf([Yup.ref("password")])
+                        : field
+            ),
         });
 
         if (!(await schema.isValid(req.body))) {
             return res.status(400).json({ error: "Validation fails" });
         }
 
-        const customer = await Customer.findByPk(req.params.id);
+        const user = await User.findByPk(req.params.id);
 
-        if (!customer) {
-            return res.status(404).json({ error: "Customer not found" });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
         }
 
-        await customer.update(req.body);
+        const { oldPassword } = req.body;
 
-        return res.json(customer);
+        if (oldPassword && !(await user.checkPassword(oldPassword))) {
+            return res.status(401).json({ error: "Password does not match" });
+        }
+
+        const { id, name, email, createdAt, updatedAt } = await user.update(
+            req.body
+        );
+        return res.status(200).json({ id, name, email, createdAt, updatedAt });
     }
 
-    // Exclui um Customer
     async destroy(req, res) {
-        const customer = await Customer.findByPk(req.params.id);
+        const user = await User.findByPk(req.params.id);
 
-        if (!customer) {
-            return res.status(404).json({ error: "Customer not found" });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
         }
 
-        await customer.destroy();
-
-        return res.json();
+        await user.destroy();
+        return res.status(204).send();
     }
 }
 
-export default new CustomersController();
+export default new UsersController();

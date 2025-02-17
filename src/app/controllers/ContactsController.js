@@ -5,8 +5,8 @@ import { parseISO } from "date-fns";
 import Customer from "../models/Customer";
 import Contact from "../models/Contact";
 
-class CustomersController {
-    //Listagem dos Customers
+class ContactsController {
+    //Listagem dos Contacts
     async index(req, res) {
         const {
             name,
@@ -22,7 +22,7 @@ class CustomersController {
         const page = req.query.page || 1;
         const limit = req.query.limit || 25;
 
-        let where = {};
+        let where = { customer_id: req.params.customerId };
         let order = [];
 
         if (name) {
@@ -96,12 +96,13 @@ class CustomersController {
             order = sort.split(",").map((item) => item.split(":"));
         }
 
-        const data = await Customer.findAll({
+        const data = await Contact.findAll({
             where,
             include: [
                 {
-                    model: Contact,
+                    model: Customer,
                     attributes: ["id", "status"],
+                    required: true,
                 },
             ],
             order,
@@ -112,16 +113,24 @@ class CustomersController {
         return res.json(data);
     }
 
-    // Recupera um Customer
+    // Recupera um Contact
     async show(req, res) {
-        const customer = await Customer.findByPk(req.params.id);
+        const contact = await Contact.findOne({
+            where: {
+                customer_id: req.params.customerId,
+                id: req.params.id,
+            },
+            attributes: { exclude: ["customer_id", "customerId"] },
+        });
 
-        if (!customer) {
-            return res.status(404).json({ error: "Customer not found" });
+        if (!contact) {
+            return res.status(404).json({ error: "Contact not found" }); // updated error message
         }
+
+        return res.json(contact);
     }
 
-    // Cria um novo Customer
+    // Cria um Contact
     async create(req, res) {
         const schema = Yup.object().shape({
             name: Yup.string().required(),
@@ -133,14 +142,21 @@ class CustomersController {
             return res.status(400).json({ error: "Validation fails" });
         }
 
-        await schema.validate(req.body);
+        const customer = await Customer.findByPk(req.params.customerId);
 
-        const customer = await Customer.create(req.body);
+        if (!customer) {
+            return res.status(404).json({ error: "Customer not found" });
+        }
 
-        return res.status(201).json(customer);
+        const contact = await Contact.create({
+            ...req.body,
+            customer_id: req.params.customerId,
+        });
+
+        return res.status(201).json(contact);
     }
 
-    // Atualiza um Customer
+    // Atualiza um Contact
     async update(req, res) {
         const schema = Yup.object().shape({
             name: Yup.string(),
@@ -152,29 +168,40 @@ class CustomersController {
             return res.status(400).json({ error: "Validation fails" });
         }
 
-        const customer = await Customer.findByPk(req.params.id);
+        const contact = await Contact.findOne({
+            where: {
+                customer_id: req.params.customerId,
+                id: req.params.id,
+            },
+            attributes: { exclude: ["customer_id", "customerId"] },
+        });
 
-        if (!customer) {
-            return res.status(404).json({ error: "Customer not found" });
+        if (!contact) {
+            return res.status(404).json({ error: "Contact not found" });
         }
 
-        await customer.update(req.body);
+        await contact.update(req.body);
 
-        return res.json(customer);
+        return res.json(contact);
     }
 
-    // Exclui um Customer
+    // Exclui um Contact
     async destroy(req, res) {
-        const customer = await Customer.findByPk(req.params.id);
+        const contact = await Contact.findOne({
+            where: {
+                customer_id: req.params.customerId,
+                id: req.params.id,
+            },
+        });
 
-        if (!customer) {
-            return res.status(404).json({ error: "Customer not found" });
+        if (!contact) {
+            return res.status(404).json({ error: "Contact not found" });
         }
 
-        await customer.destroy();
+        await contact.destroy();
 
         return res.json();
     }
 }
 
-export default new CustomersController();
+export default new ContactsController();
