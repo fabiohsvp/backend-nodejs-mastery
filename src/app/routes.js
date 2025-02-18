@@ -1,9 +1,18 @@
 import { Router } from "express";
+
+import auth from "./middlewares/auth";
+import sessions from "./controllers/SessionsController";
 import customers from "./controllers/CustomersController";
 import contacts from "./controllers/ContactsController";
 import users from "./controllers/UsersController";
 
 const routes = new Router();
+
+// Sessions
+routes.post("/sessions", sessions.create);
+
+// Controla o acesso as rotas abaixo, somente usuários autenticados
+routes.use(auth);
 
 // Customers
 routes.get("/customers", customers.index);
