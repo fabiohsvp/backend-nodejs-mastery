@@ -100,7 +100,9 @@ class UsersController {
 
     // Exibição de um User
     async show(req, res) {
-        const user = await User.findByPk(req.params.id);
+        const user = await User.findByPk(req.params.id, {
+            attributes: { exclude: ["password", "password_hash"] },
+        });
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
@@ -129,10 +131,11 @@ class UsersController {
             return res.status(400).json({ error: "Validation fails" });
         }
 
-        const { id, name, email, createdAt, updatedAt } = await User.create(
-            req.body
-        );
-        return res.status(201).json({ id, name, email, createdAt, updatedAt });
+        const { id, name, email, file_id, createdAt, updatedAt } =
+            await User.create(req.body);
+        return res
+            .status(201)
+            .json({ id, name, email, file_id, createdAt, updatedAt });
     }
 
     // Atualização de um User
@@ -171,10 +174,11 @@ class UsersController {
             return res.status(401).json({ error: "Password does not match" });
         }
 
-        const { id, name, email, createdAt, updatedAt } = await user.update(
-            req.body
-        );
-        return res.status(200).json({ id, name, email, createdAt, updatedAt });
+        const { id, name, email, file_id, createdAt, updatedAt } =
+            await user.update(req.body);
+        return res
+            .status(200)
+            .json({ id, name, email, file_id, createdAt, updatedAt });
     }
 
     async destroy(req, res) {
