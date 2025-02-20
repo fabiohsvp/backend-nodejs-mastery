@@ -22,7 +22,7 @@ Este repositório demonstra o desenvolvimento de uma API de Gestão de Usuários
 - **Express.js**
 - **Multer** (Upload de arquivos)
 - **JWT (JSON Web Token)**
-- **Redis e Bull** (Gerenciamento de filas)
+- **Redis** (Gerenciamento de filas)
 - **PostgreSQL** (Banco de dados)
 
 ## Estrutura do Projeto
