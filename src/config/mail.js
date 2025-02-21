@@ -1,10 +1,11 @@
+/* eslint-disable no-undef */
 export default {
-    host: "sandbox.smtp.mailtrap.io",
-    port: 2525,
+    host: process.env.MAIL_HOST,
+    port: process.env.MAIL_PORT,
     secure: false,
     auth: {
-        user: "96708df0aa1086",
-        pass: "4b4b8f6f7aa6fc",
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
     },
     default: {
         from: "Sistema <naoresponda@exemplo.com>",
