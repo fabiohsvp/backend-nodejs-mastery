@@ -4,6 +4,8 @@
     "main": "index.js",
     "license": "MIT",
     "dependencies": {
+        "@sentry/node": "^7.101.1",
+        "@sentry/tracing": "^7.101.1",
         "bcryptjs": "^3.0.0",
         "bee-queue": "^1.7.1",
         "date-fns": "^4.1.0",
@@ -33,6 +35,5 @@
     "scripts": {
         "dev": "nodemon ./src/server.js",
         "queue": "nodemon ./src/queue.js"
-    },
-    "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+    }
 }
